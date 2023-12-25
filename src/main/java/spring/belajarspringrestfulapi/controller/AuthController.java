@@ -2,10 +2,12 @@ package spring.belajarspringrestfulapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.LoginUserRequest;
 import spring.belajarspringrestfulapi.model.TokenResponse;
 import spring.belajarspringrestfulapi.model.WebResponse;
@@ -22,4 +24,11 @@ public class AuthController {
         TokenResponse tokenResponse = authService.login(request);
         return WebResponse.<TokenResponse>builder().data(tokenResponse).build();
     }
+
+    @DeleteMapping(path = "/api/auth/logout", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> logout(User user) {
+        authService.logout(user);
+        return WebResponse.<String>builder().data("OK").build();
+    }
+
 }
