@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.transaction.Transactional;
 import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.RegisterUserRequest;
+import spring.belajarspringrestfulapi.model.UserResponse;
 import spring.belajarspringrestfulapi.repository.UserRepository;
 import spring.belajarspringrestfulapi.security.BCrypt;
 
@@ -16,7 +17,7 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
- 
+
     @Autowired
     private ValidationService validationService;
 
@@ -34,5 +35,9 @@ public class UserService {
         user.setName(request.getName());
 
         userRepository.save(user);
+    }
+
+    public UserResponse get(User user) {
+        return UserResponse.builder().username(user.getUsername()).name(user.getName()).build();
     }
 }
