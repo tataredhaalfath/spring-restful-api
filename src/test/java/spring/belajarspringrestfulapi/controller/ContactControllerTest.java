@@ -233,4 +233,53 @@ public class ContactControllerTest {
                 });
     }
 
+    @Test
+    void deleteContactNotFound() throws Exception {
+        mockMvc.perform(
+                delete("/api/contact/123123123")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", "test"))
+                .andExpect(
+                        status().isNotFound())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<String>>() {
+
+                            });
+                    assertNotNull(response.getErrors());
+                });
+    }
+
+    @Test
+    void deleteContactSuccess() throws Exception {
+        User user = userRepository.findById("test").orElseThrow();
+
+        Contact contact = new Contact();
+        contact.setId(UUID.randomUUID().toString());
+        contact.setFirstName("tata redha");
+        contact.setLastName("al fath");
+        contact.setEmail("redha@mail.com");
+        contact.setPhone("085325224829");
+        contact.setUser(user);
+        contactRepository.save(contact);
+
+        mockMvc.perform(
+                delete("/api/contact/" + contact.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", "test"))
+                .andExpect(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+
+                            });
+                    assertNull(response.getErrors());
+                    assertEquals("OK", response.getData());
+                });
+    }
+
 }

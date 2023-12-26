@@ -1,7 +1,9 @@
 package spring.belajarspringrestfulapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties.Build;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,5 +41,12 @@ public class ContactController {
         request.setId(contactId);
         ContactResponse contactResponse = contactService.update(user, request);
         return WebResponse.<ContactResponse>builder().data(contactResponse).build();
+    }
+
+    @DeleteMapping(path = "/api/contact/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> delete(User user, @PathVariable String contactId) {
+        contactService.delete(user, contactId);
+        return WebResponse.<String>builder().data("OK").build();
+
     }
 }
