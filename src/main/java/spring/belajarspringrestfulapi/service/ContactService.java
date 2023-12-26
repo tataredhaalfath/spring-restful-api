@@ -12,6 +12,7 @@ import spring.belajarspringrestfulapi.entity.Contact;
 import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.ContactResponse;
 import spring.belajarspringrestfulapi.model.CreateContactRequest;
+import spring.belajarspringrestfulapi.model.UpdateContactRequest;
 import spring.belajarspringrestfulapi.repository.ContactRepository;
 
 @Service
@@ -47,6 +48,21 @@ public class ContactService {
     public ContactResponse get(User user, String id) {
         Contact contact = contactRepository.findFirstByUserAndId(user, id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+        return toContactResponse(contact);
+    }
+
+    @Transactional
+    public ContactResponse update(User user, UpdateContactRequest request) {
+        validationService.validate(request);
+        Contact contact = contactRepository.findFirstByUserAndId(user, request.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        contact.setFirstName(request.getFirstName());
+        contact.setLastName(request.getLastName());
+        contact.setEmail(request.getEmail());
+        contact.setPhone(request.getPhone());
+        contactRepository.save(contact);
+
         return toContactResponse(contact);
     }
 }

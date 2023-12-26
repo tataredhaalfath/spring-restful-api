@@ -22,6 +22,7 @@ import spring.belajarspringrestfulapi.entity.Contact;
 import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.ContactResponse;
 import spring.belajarspringrestfulapi.model.CreateContactRequest;
+import spring.belajarspringrestfulapi.model.UpdateContactRequest;
 import spring.belajarspringrestfulapi.model.WebResponse;
 import spring.belajarspringrestfulapi.repository.ContactRepository;
 import spring.belajarspringrestfulapi.repository.UserRepository;
@@ -82,7 +83,7 @@ public class ContactControllerTest {
     }
 
     @Test
-    void createContactSuccesst() throws Exception {
+    void createContactSuccess() throws Exception {
         CreateContactRequest request = new CreateContactRequest();
         request.setFirstName("tata redha");
         request.setLastName("al fath");
@@ -163,6 +164,72 @@ public class ContactControllerTest {
                     assertEquals(contact.getLastName(), response.getData().getLastName());
                     assertEquals(contact.getEmail(), response.getData().getEmail());
                     assertEquals(contact.getPhone(), response.getData().getPhone());
+                });
+    }
+
+    @Test
+    void updateContactBadRequest() throws Exception {
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("");
+        request.setEmail("salah");
+
+        mockMvc.perform(
+                put("/api/contact/1234")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test"))
+                .andExpect(
+                        status().isBadRequest())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<String>>() {
+
+                            });
+                    assertNotNull(response.getErrors());
+                });
+    }
+
+    @Test
+    void updateContactSuccess() throws Exception {
+        User user = userRepository.findById("test").orElseThrow();
+
+        Contact contact = new Contact();
+        contact.setId(UUID.randomUUID().toString());
+        contact.setFirstName("tata redha");
+        contact.setLastName("al fath");
+        contact.setEmail("redha@mail.com");
+        contact.setPhone("085325224829");
+        contact.setUser(user);
+        contactRepository.save(contact);
+
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("budi");
+        request.setLastName("nugraha");
+        request.setEmail("budi@mail.com");
+        request.setPhone("085325123123");
+
+        mockMvc.perform(
+                put("/api/contact/" + contact.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "test"))
+                .andExpect(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<ContactResponse> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+
+                            });
+                    assertNull(response.getErrors());
+                    assertEquals(request.getFirstName(), response.getData().getFirstName());
+                    assertEquals(request.getLastName(), response.getData().getLastName());
+                    assertEquals(request.getEmail(), response.getData().getEmail());
+                    assertEquals(request.getPhone(), response.getData().getPhone());
+
+                    assertTrue(contactRepository.existsById(response.getData().getId()));
                 });
     }
 
