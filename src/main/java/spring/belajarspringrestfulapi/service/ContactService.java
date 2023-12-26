@@ -1,17 +1,28 @@
 package spring.belajarspringrestfulapi.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.persistence.criteria.Predicate;
 import spring.belajarspringrestfulapi.entity.Contact;
 import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.ContactResponse;
 import spring.belajarspringrestfulapi.model.CreateContactRequest;
+import spring.belajarspringrestfulapi.model.SearchContactRequest;
 import spring.belajarspringrestfulapi.model.UpdateContactRequest;
 import spring.belajarspringrestfulapi.repository.ContactRepository;
 
@@ -72,5 +83,35 @@ public class ContactService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
 
         contactRepository.delete(contact);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ContactResponse> search(User user, SearchContactRequest request) {
+        Specification<Contact> specification = (root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.equal(root.get("user"), user));
+
+            if (Objects.nonNull(request.getName())) {
+                predicates.add(builder.or(
+                        builder.like(root.get("firstName"), "%" + request.getName() + "%"),
+                        builder.like(root.get("lastName"), "%" + request.getName() + "%")));
+            }
+
+            if (Objects.nonNull(request.getEmail())) {
+                predicates.add(builder.like(root.get("email"), "%" + request.getEmail() + "%"));
+            }
+
+            if (Objects.nonNull(request.getPhone())) {
+                predicates.add(builder.like(root.get("phone"), "%" + request.getPhone() + "%"));
+            }
+
+            return query.where(predicates.toArray(new Predicate[] {})).getRestriction();
+        };
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Page<Contact> contacts = contactRepository.findAll(specification, pageable);
+        List<ContactResponse> contactResponses = contacts.getContent().stream()
+                .map(this::toContactResponse).toList();
+
+        return new PageImpl<>(contactResponses, pageable, contacts.getTotalElements());
     }
 }
