@@ -5,12 +5,14 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.AddrressResponse;
 import spring.belajarspringrestfulapi.model.CreateAddressRequest;
+import spring.belajarspringrestfulapi.model.UpdateAddressRequest;
 import spring.belajarspringrestfulapi.model.WebResponse;
 import spring.belajarspringrestfulapi.service.AddressService;
 
@@ -31,6 +33,19 @@ public class AddressController {
     public WebResponse<AddrressResponse> get(User user, @PathVariable("contactId") String contactId,
             @PathVariable("addressId") String addressId) {
         AddrressResponse addrressResponse = addressService.get(user, contactId, addressId);
+        return WebResponse.<AddrressResponse>builder().data(addrressResponse).build();
+    }
+
+    @PutMapping(path = "/api/contacts/{contactId}/addresses/{addressId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<AddrressResponse> update(
+            User user,
+            @RequestBody UpdateAddressRequest request,
+            @PathVariable("contactId") String contactId,
+            @PathVariable("addressId") String addressId) {
+        request.setContactId(contactId);
+        request.setAddressId(addressId);
+
+        AddrressResponse addrressResponse = addressService.update(user, request);
         return WebResponse.<AddrressResponse>builder().data(addrressResponse).build();
     }
 

@@ -13,6 +13,7 @@ import spring.belajarspringrestfulapi.entity.Contact;
 import spring.belajarspringrestfulapi.entity.User;
 import spring.belajarspringrestfulapi.model.AddrressResponse;
 import spring.belajarspringrestfulapi.model.CreateAddressRequest;
+import spring.belajarspringrestfulapi.model.UpdateAddressRequest;
 import spring.belajarspringrestfulapi.repository.AddressRepository;
 import spring.belajarspringrestfulapi.repository.ContactRepository;
 
@@ -54,6 +55,26 @@ public class AddressService {
 
         Address address = addressRepository.findFirstByContactAndId(contact, addressId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
+
+        return toAddresResponse(address);
+    }
+
+    @Transactional
+    public AddrressResponse update(User user, UpdateAddressRequest request) {
+        validationService.validate(request);
+
+        Contact contact = contactRepository.findFirstByUserAndId(user, request.getContactId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact is not found"));
+
+        Address address = addressRepository.findFirstByContactAndId(contact, request.getAddressId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
+
+        address.setStreet(request.getStreet());
+        address.setCity(request.getCity());
+        address.setProvince(request.getProvince());
+        address.setCountry(request.getCountry());
+        address.setPostalCode(request.getPostalCode());
+        addressRepository.save(address);
 
         return toAddresResponse(address);
     }
