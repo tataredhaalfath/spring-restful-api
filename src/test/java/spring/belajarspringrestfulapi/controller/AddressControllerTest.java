@@ -208,7 +208,7 @@ public class AddressControllerTest {
                 });
     }
 
-        @Test
+    @Test
     void updateAddressSuccess() throws Exception {
         Contact contact = contactRepository.findById("test").orElseThrow();
 
@@ -222,7 +222,6 @@ public class AddressControllerTest {
         address.setPostalCode("lama");
 
         addressRepository.save(address);
-
 
         UpdateAddressRequest request = new UpdateAddressRequest();
         request.setStreet("Jl.Mawar");
@@ -255,4 +254,57 @@ public class AddressControllerTest {
                     assertTrue(addressRepository.existsById(response.getData().getId()));
                 });
     }
+
+    @Test
+    void deleteAddressNotFound() throws Exception {
+        mockMvc.perform(
+                delete("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", "test"))
+                .andExpectAll(
+                        status().isNotFound())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+
+                            });
+                    assertNotNull(response.getErrors());
+                });
+    }
+
+    @Test
+    void deleteAddressSuccess() throws Exception {
+        Contact contact = contactRepository.findById("test").orElseThrow();
+
+        Address address = new Address();
+        address.setContact(contact);
+        address.setId("test");
+        address.setStreet("jalan");
+        address.setCity("pati");
+        address.setProvince("jawa tengah");
+        address.setCountry("indonesia");
+        address.setPostalCode("59154");
+
+        addressRepository.save(address);
+
+        mockMvc.perform(
+                delete("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", "test"))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+
+                            });
+                    assertNull(response.getErrors());
+                    assertEquals("OK", response.getData());
+                    assertFalse(addressRepository.existsById("test"));
+                });
+    }
+
 }

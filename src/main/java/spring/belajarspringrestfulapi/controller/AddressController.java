@@ -2,6 +2,7 @@ package spring.belajarspringrestfulapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,15 @@ public class AddressController {
 
         AddrressResponse addrressResponse = addressService.update(user, request);
         return WebResponse.<AddrressResponse>builder().data(addrressResponse).build();
+    }
+
+    @DeleteMapping(path = "/api/contacts/{contactId}/addresses/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> remove(
+            User user,
+            @PathVariable("contactId") String contactId,
+            @PathVariable("addressId") String addressId) {
+        addressService.remove(user, contactId, addressId);
+        return WebResponse.<String>builder().data("OK").build();
     }
 
 }
