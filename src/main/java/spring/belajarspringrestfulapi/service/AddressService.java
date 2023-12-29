@@ -47,6 +47,17 @@ public class AddressService {
         return toAddresResponse(address);
     }
 
+    @Transactional(readOnly = true)
+    public AddrressResponse get(User user, String contactId, String addressId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact is not found"));
+
+        Address address = addressRepository.findFirstByContactAndId(contact, addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
+
+        return toAddresResponse(address);
+    }
+
     private AddrressResponse toAddresResponse(Address address) {
         return AddrressResponse.builder()
                 .id(address.getId())

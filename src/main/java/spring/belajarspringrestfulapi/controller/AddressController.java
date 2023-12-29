@@ -2,6 +2,7 @@ package spring.belajarspringrestfulapi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,4 +26,12 @@ public class AddressController {
         AddrressResponse addrressResponse = addressService.create(user, request);
         return WebResponse.<AddrressResponse>builder().data(addrressResponse).build();
     }
+
+    @GetMapping(path = "/api/contacts/{contactId}/addresses/{addressId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<AddrressResponse> get(User user, @PathVariable("contactId") String contactId,
+            @PathVariable("addressId") String addressId) {
+        AddrressResponse addrressResponse = addressService.get(user, contactId, addressId);
+        return WebResponse.<AddrressResponse>builder().data(addrressResponse).build();
+    }
+
 }
