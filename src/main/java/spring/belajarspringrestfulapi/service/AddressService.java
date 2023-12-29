@@ -1,5 +1,6 @@
 package spring.belajarspringrestfulapi.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,15 @@ public class AddressService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
 
         addressRepository.delete(address);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AddrressResponse> list(User user, String contactId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact is not found"));
+
+        List<Address> addresses = addressRepository.findAllByContact(contact);
+        return addresses.stream().map(this::toAddresResponse).toList();
     }
 
     private AddrressResponse toAddresResponse(Address address) {
